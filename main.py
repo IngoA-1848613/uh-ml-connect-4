@@ -39,7 +39,7 @@ class Main:
         # preprocessor = Preprocessor("data/dat/c4-10k.npy")
         # self.dataset = preprocessor.process_bw()
 
-        preprocessor = Preprocessor("data/dat/c4bbm-10k.npy")
+        preprocessor = Preprocessor("data/dat/c4bbm-50k.npy")
         self.dataset = preprocessor.process_bm()
 
     # Training/evaluation
@@ -63,7 +63,11 @@ class Main:
         model.load_model()
 
         # model.validate_against_random()
-        model.validate_against_monte_carlo(5)
+        model.validate_against_monte_carlo(40)
+
+        # n=5  -> 84%
+        # n=10 -> 73%
+        # n=40 -> 35%
 
 
 # Execute main
@@ -71,5 +75,7 @@ if __name__ == "__main__":
     main = Main()
 
     # Actions
+    # main.preprocess()
+    # main.train()
     main.test_against_x()
 
