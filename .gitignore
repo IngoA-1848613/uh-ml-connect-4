@@ -1,0 +1,12 @@
+# IDE
+.vscode
+.idea
+
+# Windows/MacOs
+.DS_Store
+
+# Data
+data
+
+# Python
+__pycache__
