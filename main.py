@@ -62,8 +62,7 @@ class Main:
         model = Model2()
         model.load_model()
 
-        # model.validate_against_random()
-        model.validate_against_monte_carlo(40)
+        model.validate_against_monte_carlo(5)
 
         # n=5  -> 84%
         # n=10 -> 73%
@@ -77,5 +76,8 @@ if __name__ == "__main__":
     # Actions
     # main.preprocess()
     # main.train()
+
     main.test_against_x()
+
+
 

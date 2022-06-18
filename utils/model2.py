@@ -5,7 +5,7 @@ import numpy as np
 from lib.connectfour import Game
 from sklearn.model_selection import KFold, train_test_split
 from tensorflow.python.keras import Sequential
-from tensorflow.python.keras.layers import Dense, Dropout
+from tensorflow.python.keras.layers import Dense, Dropout, InputLayer
 from tensorflow.python.keras.models import load_model
 from tensorflow.python.keras.utils.np_utils import to_categorical
 
@@ -20,14 +20,15 @@ OUTPUT_SIZE = NUM_COLS
 OUTPUT_ACTIVATION = "softmax"
 METRICS = ["accuracy"]
 
-LOSS = "categorical_crossentropy"
-OPTIMIZER = "adam"  # rmsprop
+# LOSS = "mse"
+LOSS = "categorical_crossentropy" # "kl_divergence"
+OPTIMIZER = "adam"  # adam, adamax, nadam, rmsprop
 
-HIDDEN_LAYERS = [200, 200]
+HIDDEN_LAYERS = [400, 400, 200]
 HIDDEN_ACTIVATION = "relu"
 
-EPOCHS = 5
-BATCH_SIZE = 32
+EPOCHS = 10
+BATCH_SIZE = 16
 TEST_SIZE = 0.2
 
 
@@ -67,7 +68,8 @@ class Model2:
         self._model = Sequential()
 
         # add input layer (prevent over-fitting)
-        self._model.add(Dropout(0.1, input_shape=(INPUT_SIZE,)))
+        # self._model.add(InputLayer(input_shape=(INPUT_SIZE,)))
+        self._model.add(Dropout(0.05, input_shape=(INPUT_SIZE,)))
 
         # add hidden layers
         for num_neurons in HIDDEN_LAYERS:
@@ -234,8 +236,14 @@ class Model2:
             starts[start_player] += 1
             results[game.status] += 1
 
-            print("iteration ({0}): win({1}) and starts({2})".format(
-                i, result_values[game.status], starts_values[start_player]))
+            results_ai = results[PLAYER_AI]
+            results_random = results[PLAYER_RANDOM]
+            results_draw = results[DRAW]
+
+            win_rate = results_ai / (results_ai + results_random)
+
+            print("iteration ({0}): win({1}) and starts({2}) and win-rate ({3})".format(
+                i, result_values[game.status], starts_values[start_player], win_rate))
 
         results_ai = results[PLAYER_AI]
         results_random = results[PLAYER_RANDOM]
