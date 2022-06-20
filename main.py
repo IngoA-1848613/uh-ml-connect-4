@@ -1,6 +1,7 @@
 import tensorflow as tf
 
 from preprocessing.converter import Converter
+from models.model3 import Model3
 from models.model2 import Model2
 from preprocessing.preprocessor import Preprocessor
 
@@ -57,6 +58,13 @@ class Main:
 
         model.validate_against_monte_carlo(5)
 
+    def test_against_random(self):
+        print("testing against player ...")
+
+        model = Model2()
+        model.load_model()
+        model.validate_against_random()
+
         # n=5  -> 84%
         # n=10 -> 73%
         # n=40 -> 35%
@@ -70,4 +78,4 @@ if __name__ == "__main__":
     # main.preprocess()
     # main.train()
 
-    main.test_against_x()
+    main.test_against_random()

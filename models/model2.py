@@ -157,7 +157,7 @@ class Model2:
 
     # Validation against (random, monte carlo)
     def validate_against_random(self):
-        iterations = 100
+        iterations = 200
         result_values = {PLAYER_AI: "ai",
                          PLAYER_RANDOM: "random", DRAW: "draw"}
         starts_values = {PLAYER_AI: "ai",
@@ -253,3 +253,56 @@ class Model2:
         print("win-rate: {0}% and {1} draws".format(win_rate, results_draw))
 
         return results, starts
+
+
+    # def validate_against_model(self, model: Model3):
+    #     iterations = 100
+    #     result_values = {PLAYER_AI: "Ingo", PLAYER_RANDOM: "Dries", DRAW: "draw"}
+    #     starts_values = {PLAYER_AI: "Ingo", PLAYER_RANDOM: "Dries"}
+
+    #     results = {PLAYER_AI: 0, PLAYER_RANDOM: 0, DRAW: 0}
+    #     starts = {PLAYER_AI: 0, PLAYER_RANDOM: 0}
+
+    #     for i in range(iterations):
+
+    #         game = Game()
+
+    #         active_player = PLAYER_AI if i < (iterations / 2) else PLAYER_RANDOM
+    #         start_player = active_player
+
+    #         while game.check_status() == None:
+    #             move = 3
+
+    #             if active_player == PLAYER_AI:
+    #                 move = self.predict_move(game, active_player)
+    #             else:
+    #                 move = model.predict_move(game, player_id=active_player, starting_player=start_player)
+
+    #             print(f"move: {move}")
+
+    #             game.play_move(player=active_player, column=move)
+    #             active_player *= -1
+
+    #         starts[start_player] += 1
+    #         results[game.status] += 1
+
+    #         results_ai = results[PLAYER_AI]
+    #         results_random = results[PLAYER_RANDOM]
+    #         results_draw = results[DRAW]
+
+    #         win_rate_ai = results_ai / (results_ai + results_random)
+    #         win_rate_random = results_random / (results_ai + results_random)
+
+    #         print(f"iteration {i}: win({result_values[game.status]}) and starts({starts_values[start_player]}) and win-rate-ingo: {win_rate_ai}% and win-rate-dries: {win_rate_random}%")
+
+    #     results_ai = results[PLAYER_AI]
+    #     results_random = results[PLAYER_RANDOM]
+    #     results_draw = results[DRAW]
+
+    #     win_rate_ai = results_ai / (results_ai + results_random)
+    #     win_rate_random = results_random / (results_ai + results_random)
+
+    #     print(f"win-rate-ingo: {win_rate_ai}% and win-rate-dries: {win_rate_random}%")
+
+
+    #     return results, starts
