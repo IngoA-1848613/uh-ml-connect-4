@@ -24,12 +24,13 @@ METRICS = ["accuracy"]
 LOSS = "categorical_crossentropy" # "kl_divergence"
 OPTIMIZER = "adam"  # adam, adamax, nadam, rmsprop
 
-HIDDEN_LAYERS = [400, 400, 200]
+HIDDEN_LAYERS = [200, 200]
 HIDDEN_ACTIVATION = "relu"
 
-EPOCHS = 10
-BATCH_SIZE = 16
+EPOCHS = 5
+BATCH_SIZE = 32
 TEST_SIZE = 0.2
+DROPOUT_RATE = 0.1
 
 
 PLAYER_RANDOM = -1
@@ -69,7 +70,7 @@ class Model2:
 
         # add input layer (prevent over-fitting)
         # self._model.add(InputLayer(input_shape=(INPUT_SIZE,)))
-        self._model.add(Dropout(0.05, input_shape=(INPUT_SIZE,)))
+        self._model.add(Dropout(DROPOUT_RATE, input_shape=(INPUT_SIZE,)))
 
         # add hidden layers
         for num_neurons in HIDDEN_LAYERS:
