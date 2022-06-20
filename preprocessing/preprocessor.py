@@ -1,5 +1,6 @@
 import numpy as np
-from utils.converter import Converter
+
+from preprocessing.converter import Converter
 
 SEED = 1850394
 
@@ -52,8 +53,7 @@ class Preprocessor:
             if wins:
                 if player == -1:
                     board = np.negative(board)
-                    board[board==0.] = 0
-
+                    board[board == 0.] = 0
 
                 history.append((board, move))
 
@@ -63,4 +63,3 @@ class Preprocessor:
         print("2w: ", second_winner)
 
         return history
-

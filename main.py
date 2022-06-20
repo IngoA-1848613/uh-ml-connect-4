@@ -1,18 +1,11 @@
-import numpy as np
 import tensorflow as tf
-from utils.converter import Converter
-from utils.model import Model
-from utils.model2 import Model2
-from utils.preprocessor import Preprocessor
 
+from preprocessing.converter import Converter
+from models.model2 import Model2
+from preprocessing.preprocessor import Preprocessor
 
 # Constants
 SEED = 1850394
-
-PATH = "data/csv/"
-DS_10K = "c4-10k.csv"
-DS_50K = "c4-50k.csv"
-DATASET = PATH + DS_50K
 
 
 # Main function
@@ -78,6 +71,3 @@ if __name__ == "__main__":
     # main.train()
 
     main.test_against_x()
-
-
-

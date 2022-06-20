@@ -2,12 +2,13 @@ import os
 from copy import deepcopy
 
 import numpy as np
-from lib.connectfour import Game
 from sklearn.model_selection import KFold, train_test_split
 from tensorflow.python.keras import Sequential
-from tensorflow.python.keras.layers import Dense, Dropout, InputLayer
+from tensorflow.python.keras.layers import Dense, Dropout
 from tensorflow.python.keras.models import load_model
 from tensorflow.python.keras.utils.np_utils import to_categorical
+
+from lib.connectfour import Game
 
 # Tensorflow: Only errors
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -15,13 +16,13 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 NUM_COLS = 7
 NUM_ROWS = 6
 
-INPUT_SIZE = NUM_COLS*NUM_ROWS
+INPUT_SIZE = NUM_COLS * NUM_ROWS
 OUTPUT_SIZE = NUM_COLS
 OUTPUT_ACTIVATION = "softmax"
 METRICS = ["accuracy"]
 
 # LOSS = "mse"
-LOSS = "categorical_crossentropy" # "kl_divergence"
+LOSS = "categorical_crossentropy"  # "kl_divergence"
 OPTIMIZER = "adam"  # adam, adamax, nadam, rmsprop
 
 HIDDEN_LAYERS = [200, 200]
@@ -32,7 +33,6 @@ BATCH_SIZE = 32
 TEST_SIZE = 0.2
 DROPOUT_RATE = 0.1
 
-
 PLAYER_RANDOM = -1
 PLAYER_AI = 1
 DRAW = 0
@@ -42,7 +42,7 @@ class Model2:
     _model: Sequential
     _dataset = []
 
-    def __init__(self, dataset = []) -> None:
+    def __init__(self, dataset=[]) -> None:
         self._dataset = dataset
 
     # Formatting
@@ -171,7 +171,7 @@ class Model2:
             game = Game()
 
             active_player = PLAYER_AI if i < (
-                iterations / 2) else PLAYER_RANDOM
+                    iterations / 2) else PLAYER_RANDOM
             start_player = active_player
 
             while game.check_status() == None:
@@ -205,10 +205,8 @@ class Model2:
 
     def validate_against_monte_carlo(self, n=5):
         iterations = 100
-        result_values = {PLAYER_AI: "ai",
-                         PLAYER_RANDOM: "random", DRAW: "draw"}
-        starts_values = {PLAYER_AI: "ai",
-                         PLAYER_RANDOM: "random"}
+        result_values = {PLAYER_AI: "ai", PLAYER_RANDOM: "random", DRAW: "draw"}
+        starts_values = {PLAYER_AI: "ai", PLAYER_RANDOM: "random"}
 
         results = {PLAYER_AI: 0, PLAYER_RANDOM: 0, DRAW: 0}
         starts = {PLAYER_AI: 0, PLAYER_RANDOM: 0}
@@ -217,8 +215,7 @@ class Model2:
 
             game = Game()
 
-            active_player = PLAYER_AI if i < (
-                iterations / 2) else PLAYER_RANDOM
+            active_player = PLAYER_AI if i < (iterations / 2) else PLAYER_RANDOM
             start_player = active_player
 
             while game.check_status() == None:
@@ -243,8 +240,9 @@ class Model2:
 
             win_rate = results_ai / (results_ai + results_random)
 
-            print("iteration ({0}): win({1}) and starts({2}) and win-rate ({3})".format(
-                i, result_values[game.status], starts_values[start_player], win_rate))
+            print("iteration ({0}): win({1}) and starts({2}) and win-rate ({3})".format(i, result_values[game.status],
+                                                                                        starts_values[start_player],
+                                                                                        win_rate))
 
         results_ai = results[PLAYER_AI]
         results_random = results[PLAYER_RANDOM]
@@ -255,4 +253,3 @@ class Model2:
         print("win-rate: {0}% and {1} draws".format(win_rate, results_draw))
 
         return results, starts
-

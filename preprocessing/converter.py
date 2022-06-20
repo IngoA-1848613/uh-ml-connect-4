@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+
 from lib.connectfour import Game
 
 
@@ -20,14 +21,14 @@ class Converter:
 
     @classmethod
     def get(self, item):
-        board_size = 6*7
+        board_size = 6 * 7
         return item[0:board_size], item[board_size:]
 
     # Board parsers
     # Default
     @classmethod
     def board(self, moves):
-        states = np.empty((len(moves), 7*6))
+        states = np.empty((len(moves), 7 * 6))
         labels = np.empty((len(moves), 4))
 
         game = Game()
@@ -52,7 +53,7 @@ class Converter:
     # Capture board before move
     @classmethod
     def board_bbm(self, moves):
-        states = np.empty((len(moves), 7*6))
+        states = np.empty((len(moves), 7 * 6))
         labels = np.empty((len(moves), 4))
 
         game = Game()

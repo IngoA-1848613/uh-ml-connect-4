@@ -2,12 +2,13 @@ import os
 from copy import deepcopy
 
 import numpy as np
-from lib.connectfour import Game
 from sklearn.model_selection import KFold, train_test_split
 from tensorflow.python.keras import Sequential
 from tensorflow.python.keras.layers import Dense, Dropout
 from tensorflow.python.keras.models import load_model
 from tensorflow.python.keras.utils.np_utils import to_categorical
+
+from lib.connectfour import Game
 
 # Tensorflow: Only errors
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -15,7 +16,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 NUM_COLS = 7
 NUM_ROWS = 6
 
-INPUT_SIZE = NUM_COLS*NUM_ROWS
+INPUT_SIZE = NUM_COLS * NUM_ROWS
 OUTPUT_SIZE = 3
 OUTPUT_ACTIVATION = "softmax"
 METRICS = ["accuracy"]
@@ -29,7 +30,6 @@ HIDDEN_ACTIVATION = "relu"
 EPOCHS = 15
 BATCH_SIZE = 32
 TEST_SIZE = 0.2
-
 
 PLAYER_RANDOM = -1
 PLAYER_AI = 1
@@ -176,7 +176,7 @@ class Model:
             game = Game()
 
             active_player = PLAYER_AI if i < (
-                iterations / 2) else PLAYER_RANDOM
+                    iterations / 2) else PLAYER_RANDOM
             start_player = active_player
 
             while game.check_status() == None:
@@ -223,7 +223,7 @@ class Model:
             game = Game()
 
             active_player = PLAYER_AI if i < (
-                iterations / 2) else PLAYER_RANDOM
+                    iterations / 2) else PLAYER_RANDOM
             start_player = active_player
 
             while game.check_status() == None:
