@@ -10,7 +10,7 @@ DRAW = 0
 class Validator:
 
     @staticmethod
-    def validate_against_game(predict, n=0, iterations=100):
+    def validate_against_game(predict, n=0, iterations=100, disable_print=False):
         result_values = {PLAYER_AI: "ai", PLAYER_RANDOM: "random", DRAW: "draw"}
         starts_values = {PLAYER_AI: "ai", PLAYER_RANDOM: "random"}
 
@@ -47,13 +47,15 @@ class Validator:
             wr = results_ai / (results_ai + results_random)
             sn = "first" if start_player == PLAYER_AI else "second"
             wn = "wins" if game.status == PLAYER_AI else "loses"
-            print(f"iteration ({i}): ai goes {sn} and {wn} - win-rate ({wr:.2f})")
+            if not disable_print:
+                print(f"iteration ({i}): ai goes {sn} and {wn} - win-rate ({wr:.2f})")
 
         results_ai = results[PLAYER_AI]
         results_random = results[PLAYER_RANDOM]
         results_draw = results[DRAW]
         win_rate = results_ai / (results_ai + results_random)
-        print(f"win-rate: {win_rate * 100}% and {results_draw} draws")
+        if not disable_print:
+            print(f"win-rate: {win_rate * 100}% and {results_draw} draws")
 
         return win_rate
 
@@ -84,6 +86,25 @@ class Validator:
 
             y_prediction = model.predict(x_test)
             accuracy = Validator.accuracy(y_test, y_prediction)
+            print(f"Accuracy for fold no. {count} is: {accuracy}")
+
+            count += 1
+
+    @staticmethod
+    def cross_validation_against_game(model, n=5):
+        x, y = model.get_input_output()
+
+        splits = 5
+        kf = KFold(n_splits=splits, shuffle=True)
+
+        count = 0
+        for train_range, test_range in kf.split(x):
+            x_train, x_test = x[train_range], x[test_range]
+            y_train, y_test = y[train_range], y[test_range]
+
+            model.create_model()
+            model.train_model_xy(x_train, y_train)
+            accuracy = Validator.validate_against_game(model.predict_move, n=n, disable_print=True)
             print(f"Accuracy for fold no. {count} is: {accuracy}")
 
             count += 1

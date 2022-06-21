@@ -29,7 +29,7 @@ OPTIMIZER = "adam"  # adam, adamax, nadam, rmsprop
 HIDDEN_LAYERS = [200, 200]
 HIDDEN_ACTIVATION = "relu"
 
-EPOCHS = 5
+EPOCHS = 1
 BATCH_SIZE = 32
 TEST_SIZE = 0.2
 DROPOUT_RATE = 0.1
@@ -68,8 +68,6 @@ class Model2:
 
         x = np.array(input)
         y = to_categorical(output, OUTPUT_SIZE)
-
-        print(input[:5])
 
         return x, y
 

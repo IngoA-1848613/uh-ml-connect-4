@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from models.model3 import Model3
+from models.model2 import Model2
 from preprocessing.converter import Converter
 from utils.validator import Validator
 
@@ -13,7 +13,7 @@ class Main:
     dataset = []
     dataset_name = "data/dat/c4-50k.npy"
     model_name = "model3"
-    model = Model3()
+    model = Model2()
 
     # Init
     def __init__(self) -> None:
@@ -45,10 +45,10 @@ class Main:
         # for batch_size in [256]:
         #     self.model.train_model(batch_size, "model_b_" + str(batch_size))
 
-    @staticmethod
-    def test():
+    def test(self):
         print("running cross_validation ...")
-        # self.model.cross_validation()
+
+        Validator.cross_validation_against_game(self.model)
 
     def test_against_game(self):
         print("testing against game ...")
@@ -65,7 +65,8 @@ if __name__ == "__main__":
 
     # Actions
     # Main.convert()
-    # main.preprocess()
+    main.preprocess()
     # main.train()
     #
-    main.test_against_game()
+    main.test()
+    # main.test_against_game()
