@@ -4,7 +4,7 @@ from copy import deepcopy
 import numpy as np
 from sklearn.model_selection import KFold, train_test_split
 from tensorflow.python.keras import Sequential
-from tensorflow.python.keras.layers import Dense, Dropout
+from tensorflow.python.keras.layers import Dense, Dropout, Flatten
 from tensorflow.python.keras.models import load_model
 from tensorflow.python.keras.utils.np_utils import to_categorical
 
@@ -16,7 +16,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 NUM_COLS = 7
 NUM_ROWS = 6
 
-INPUT_SIZE = NUM_COLS * NUM_ROWS
+INPUT_SIZE = NUM_COLS * (NUM_ROWS + 0) + 0
 OUTPUT_SIZE = NUM_COLS
 OUTPUT_ACTIVATION = "softmax"
 METRICS = ["accuracy"]
@@ -39,23 +39,37 @@ DRAW = 0
 
 
 class Model2:
+    _path: str = "data/models/model2"
     _model: Sequential
     _dataset = []
 
-    def __init__(self, dataset=[]) -> None:
+    # Setters
+    def set_dataset(self, dataset):
         self._dataset = dataset
+
+    # Converting
+    @staticmethod
+    def convert_board(board):
+        board_flat = np.array(board).flatten()
+        # board_flat = np.append(board_flat, [0, 0, 0, 0, 0, 0, 0])
+        # board_2d = np.array(board_flat).reshape(7, 7)
+
+        # board_2d = np.array(board_flat).reshape(7, 7)
+        # return np.flip(board_flat)
+        return board_flat
 
     # Formatting
     def get_input_output(self):
         input, output = [], []
 
         for data in self._dataset:
-            board, move = data
+            board, board2, move = data
 
-            input.append(board)
+            # input.append(Model2.convert_board(board2))
+            input.append(Model2.convert_board(board))
             output.append(move)
 
-        X = np.array(input).reshape((-1, INPUT_SIZE))
+        X = np.array(input)
         y = to_categorical(output, OUTPUT_SIZE)
 
         return X, y
@@ -68,8 +82,10 @@ class Model2:
     def create_model(self):
         self._model = Sequential()
 
-        # add input layer (prevent over-fitting)
-        # self._model.add(InputLayer(input_shape=(INPUT_SIZE,)))
+        # add input (flatten) layer
+        self._model.add(Flatten())
+
+        # add dropout layer (prevent over-fitting)
         self._model.add(Dropout(DROPOUT_RATE, input_shape=(INPUT_SIZE,)))
 
         # add hidden layers
@@ -91,7 +107,7 @@ class Model2:
         history = self._model.fit(X_train, y_train, validation_data=(
             X_test, y_test), epochs=EPOCHS, batch_size=BATCH_SIZE)
 
-        self._model.save("data/models/model2")
+        self.save_model()
 
         return history
 
@@ -99,21 +115,31 @@ class Model2:
         history = self._model.fit(X, y, epochs=EPOCHS, batch_size=BATCH_SIZE)
         return history
 
+    def save_model(self):
+        self._model.save(self._path)
+
     def load_model(self):
-        self._model = load_model("data/models/model2")
+        self._model = load_model(self._path)
 
     # Prediction
-    def predict(self, board):
-        input = np.array(board).reshape((-1, INPUT_SIZE))
-        return self._model.predict(input)
+    def predict(self, boards):
+        for i in range(len(boards)):
+            boards[i] = Model2.convert_board(boards[i])
+
+        return self._model.predict(np.array(boards))
 
     def predict_one(self, board):
         return self.predict([board])[0]
 
-    def predict_move(self, game: Game, player: int):
+    def predict_move(self, game: Game, prev_move: int, started: int):
         game_copy = deepcopy(game)
-        board = game_copy.board
+        board = np.array(game_copy.board).flatten()
 
+        last_move = np.array([0, 0, 0, 0, 0, 0, 0])
+        if prev_move >= 0:
+            last_move[int(prev_move)] = 1
+
+        # moves = self.predict_one(np.append(np.append(board, started), last_move))
         moves = self.predict_one(board)
 
         for i in range(NUM_COLS):
@@ -157,7 +183,7 @@ class Model2:
 
     # Validation against (random, monte carlo)
     def validate_against_random(self):
-        iterations = 100
+        iterations = 1000
         result_values = {PLAYER_AI: "ai",
                          PLAYER_RANDOM: "random", DRAW: "draw"}
         starts_values = {PLAYER_AI: "ai",
@@ -214,19 +240,19 @@ class Model2:
         for i in range(iterations):
 
             game = Game()
+            prev_move = -1
 
             active_player = PLAYER_AI if i < (iterations / 2) else PLAYER_RANDOM
             start_player = active_player
 
-            while game.check_status() == None:
-                move = 3
-
+            while game.check_status() is None:
                 if active_player == PLAYER_AI:
-                    best_move = self.predict_move(game, active_player)
+                    best_move = self.predict_move(game, prev_move, start_player)
                     move = best_move
                 else:
                     random_move, _ = game.smart_action(player=active_player, n=n, legal_only=True)
                     move = random_move
+                    prev_move = move
 
                 game.play_move(player=active_player, column=move)
                 active_player *= -1
@@ -236,7 +262,6 @@ class Model2:
 
             results_ai = results[PLAYER_AI]
             results_random = results[PLAYER_RANDOM]
-            results_draw = results[DRAW]
 
             win_rate = results_ai / (results_ai + results_random)
 

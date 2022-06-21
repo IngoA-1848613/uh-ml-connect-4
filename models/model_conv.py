@@ -4,7 +4,7 @@ from copy import deepcopy
 import numpy as np
 from sklearn.model_selection import KFold, train_test_split
 from tensorflow.python.keras import Sequential
-from tensorflow.python.keras.layers import Dense, Dropout
+from tensorflow.python.keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
 from tensorflow.python.keras.models import load_model
 from tensorflow.python.keras.utils.np_utils import to_categorical
 
@@ -17,12 +17,13 @@ NUM_COLS = 7
 NUM_ROWS = 6
 
 INPUT_SIZE = NUM_COLS * NUM_ROWS
-OUTPUT_SIZE = 3
+OUTPUT_SIZE = NUM_COLS
 OUTPUT_ACTIVATION = "softmax"
 METRICS = ["accuracy"]
 
-LOSS = "categorical_crossentropy"
-OPTIMIZER = "adam"  # rmsprop
+# LOSS = "mse"
+LOSS = "categorical_crossentropy"  # "kl_divergence"
+OPTIMIZER = "adam"  # adam, adamax, nadam, rmsprop
 
 HIDDEN_LAYERS = [200, 200]
 HIDDEN_ACTIVATION = "relu"
@@ -30,16 +31,19 @@ HIDDEN_ACTIVATION = "relu"
 EPOCHS = 15
 BATCH_SIZE = 32
 TEST_SIZE = 0.2
+DROPOUT_RATE = 0.1
 
 PLAYER_RANDOM = -1
 PLAYER_AI = 1
 DRAW = 0
 
 
-class Model:
+class ModelConv:
+    _path: str = "data/models/model_92"
     _model: Sequential
     _dataset = []
 
+    # Setters
     def set_dataset(self, dataset):
         self._dataset = dataset
 
@@ -48,13 +52,14 @@ class Model:
         input, output = [], []
 
         for data in self._dataset:
-            board, winner = data
+            board, move = data
+            b = np.array(board).reshape((6, 7, 1))
 
-            input.append(board)
-            output.append(winner)
+            input.append(b)
+            output.append(move)
 
-        X = np.array(input).reshape((-1, INPUT_SIZE))
-        y = to_categorical(output, 3)
+        X = np.array(input)
+        y = to_categorical(output, OUTPUT_SIZE)
 
         return X, y
 
@@ -66,13 +71,19 @@ class Model:
     def create_model(self):
         self._model = Sequential()
 
-        # add input layer (prevent over-fitting)
-        self._model.add(Dropout(0.1, input_shape=(INPUT_SIZE,)))
+        # Convolution
+        self._model.add(Conv2D(64, (3, 3), input_shape=(6, 7, 1)))
+        self._model.add(MaxPooling2D(pool_size=(2, 2)))
+
+        # Flatten the input
+        self._model.add(Flatten())
+
+        # Dropout to prevent over-fitting
+        self._model.add(Dropout(DROPOUT_RATE, input_shape=(INPUT_SIZE,)))
 
         # add hidden layers
         for num_neurons in HIDDEN_LAYERS:
-            self._model.add(Dense(
-                num_neurons, activation=HIDDEN_ACTIVATION))
+            self._model.add(Dense(num_neurons, activation=HIDDEN_ACTIVATION))
 
         # add output layer
         self._model.add(Dense(OUTPUT_SIZE, activation=OUTPUT_ACTIVATION))
@@ -88,7 +99,7 @@ class Model:
         history = self._model.fit(X_train, y_train, validation_data=(
             X_test, y_test), epochs=EPOCHS, batch_size=BATCH_SIZE)
 
-        self._model.save("data/models/model")
+        self.save_model()
 
         return history
 
@@ -96,36 +107,32 @@ class Model:
         history = self._model.fit(X, y, epochs=EPOCHS, batch_size=BATCH_SIZE)
         return history
 
+    # Save/Load
+    def save_model(self):
+        self._model.save(self._path)
+
     def load_model(self):
-        self._model = load_model("data/models/model")
+        self._model = load_model(self._path)
 
     # Prediction
     def predict(self, board):
-        input = np.array(board).reshape((-1, INPUT_SIZE))
+        input = np.array(board).reshape((-1, 6, 7, 1))
         return self._model.predict(input)
 
     def predict_one(self, board):
         return self.predict([board])[0]
 
     def predict_move(self, game: Game, player: int):
+        game_copy = deepcopy(game)
+        board = game_copy.board
 
-        best_move = 3,
-        highest_prediction = 0
+        moves = self.predict_one(board)
 
         for i in range(NUM_COLS):
             if not game.is_legal_move(i):
-                continue
+                moves[i] = 0
 
-            game_copy = deepcopy(game)
-            game_copy.play_move(player, i)
-
-            prediction_value = self.predict_one(game_copy.board)[
-                1 if player == 1 else 2]
-
-            if prediction_value > highest_prediction:
-                best_move = i
-                highest_prediction = prediction_value
-
+        best_move = np.argmax(moves)
         return best_move
 
     # Validation
@@ -133,8 +140,7 @@ class Model:
         score = 0
 
         for i in range(len(y_truth)):
-            argmax_truth, argmax_prediction = np.argmax(
-                y_truth[i]), np.argmax(y_prediction[i])
+            argmax_truth, argmax_prediction = np.argmax(y_truth[i]), np.argmax(y_prediction[i])
 
             if argmax_truth == argmax_prediction:
                 score += 1
@@ -163,10 +169,8 @@ class Model:
     # Validation against (random, monte carlo)
     def validate_against_random(self):
         iterations = 100
-        result_values = {PLAYER_AI: "ai",
-                         PLAYER_RANDOM: "random", DRAW: "draw"}
-        starts_values = {PLAYER_AI: "ai",
-                         PLAYER_RANDOM: "random"}
+        result_values = {PLAYER_AI: "ai", PLAYER_RANDOM: "random", DRAW: "draw"}
+        starts_values = {PLAYER_AI: "ai", PLAYER_RANDOM: "random"}
 
         results = {PLAYER_AI: 0, PLAYER_RANDOM: 0, DRAW: 0}
         starts = {PLAYER_AI: 0, PLAYER_RANDOM: 0}
@@ -175,8 +179,7 @@ class Model:
 
             game = Game()
 
-            active_player = PLAYER_AI if i < (
-                    iterations / 2) else PLAYER_RANDOM
+            active_player = PLAYER_AI if i < (iterations / 2) else PLAYER_RANDOM
             start_player = active_player
 
             while game.check_status() == None:
@@ -210,10 +213,8 @@ class Model:
 
     def validate_against_monte_carlo(self, n=5):
         iterations = 100
-        result_values = {PLAYER_AI: "ai",
-                         PLAYER_RANDOM: "random", DRAW: "draw"}
-        starts_values = {PLAYER_AI: "ai",
-                         PLAYER_RANDOM: "random"}
+        result_values = {PLAYER_AI: "ai", PLAYER_RANDOM: "random", DRAW: "draw"}
+        starts_values = {PLAYER_AI: "ai", PLAYER_RANDOM: "random"}
 
         results = {PLAYER_AI: 0, PLAYER_RANDOM: 0, DRAW: 0}
         starts = {PLAYER_AI: 0, PLAYER_RANDOM: 0}
@@ -222,8 +223,7 @@ class Model:
 
             game = Game()
 
-            active_player = PLAYER_AI if i < (
-                    iterations / 2) else PLAYER_RANDOM
+            active_player = PLAYER_AI if i < (iterations / 2) else PLAYER_RANDOM
             start_player = active_player
 
             while game.check_status() == None:
@@ -242,8 +242,15 @@ class Model:
             starts[start_player] += 1
             results[game.status] += 1
 
-            print("iteration ({0}): win({1}) and starts({2})".format(
-                i, result_values[game.status], starts_values[start_player]))
+            results_ai = results[PLAYER_AI]
+            results_random = results[PLAYER_RANDOM]
+            results_draw = results[DRAW]
+
+            win_rate = results_ai / (results_ai + results_random)
+
+            print("iteration ({0}): win({1}) and starts({2}) and win-rate ({3})".format(i, result_values[game.status],
+                                                                                        starts_values[start_player],
+                                                                                        win_rate))
 
         results_ai = results[PLAYER_AI]
         results_random = results[PLAYER_RANDOM]

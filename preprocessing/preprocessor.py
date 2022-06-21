@@ -22,7 +22,7 @@ class Preprocessor:
         # add to history
         for item in data:
             board, output = Converter.get(item)
-            _, winner, _, _ = output
+            _, winner, _, _, _ = output
             history.append((board, winner))
 
         return history
@@ -35,19 +35,10 @@ class Preprocessor:
         np.random.seed(SEED)
         np.random.shuffle(data)
 
-        starter_winner = 0
-        second_winner = 0
-
         # add to history
         for item in data:
             board, output = Converter.get(item)
-            player, winner, move, started = output
-
-            if (started == winner):
-                starter_winner += 1
-            else:
-                second_winner += 1
-
+            player, winner, move, started, prev_move = output
             wins = player == winner
 
             if wins:
@@ -55,11 +46,10 @@ class Preprocessor:
                     board = np.negative(board)
                     board[board == 0.] = 0
 
-                history.append((board, move))
+                last_move = np.array([0, 0, 0, 0, 0, 0, 0])
+                if prev_move >= 0:
+                    last_move[int(prev_move)] = 1
 
-                # print(winner, move)
-                # print(np.array(board).reshape((6, 7)))
-        print("1w: ", starter_winner)
-        print("2w: ", second_winner)
+                history.append((board, np.append(np.append(board, started), last_move), move))
 
         return history

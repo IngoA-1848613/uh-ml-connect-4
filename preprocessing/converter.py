@@ -20,22 +20,25 @@ class Converter:
         print("converted: {0} to {1}".format(input, output))
 
     @classmethod
-    def get(self, item):
+    def get(cls, item):
         board_size = 6 * 7
         return item[0:board_size], item[board_size:]
 
     # Board parsers
     # Default
     @classmethod
-    def board(self, moves):
+    def board(cls, moves):
         states = np.empty((len(moves), 7 * 6))
-        labels = np.empty((len(moves), 4))
+        labels = np.empty((len(moves), 5))
 
         game = Game()
         starter = None
 
-        for _, i in moves.iterrows():
-            idx, player, move, winner = i['idx'], i['player'], i['move'], i['winner']
+        prev_idx = 0
+        prev_move = 3
+
+        for i, row in moves.iterrows():
+            idx, player, move, winner = row['idx'], row['player'], row['move'], row['winner']
 
             if starter is None:
                 starter = player
@@ -47,21 +50,31 @@ class Converter:
             labels[idx, 1] = winner
             labels[idx, 2] = move
             labels[idx, 3] = starter
+            labels[idx, 4] = -1
 
-        return (states, labels)
+            if prev_idx != idx - 1:
+                labels[idx, 4] = prev_move
+
+            prev_idx = idx
+            prev_move = move
+
+        return states, labels
 
     # Capture board before move
     @classmethod
-    def board_bbm(self, moves):
+    def board_bbm(cls, moves):
         states = np.empty((len(moves), 7 * 6))
-        labels = np.empty((len(moves), 4))
+        labels = np.empty((len(moves), 5))
 
         game = Game()
         starter = None
 
         # moves.iter-rows() -> a list of moves between 2 players
-        for _, i in moves.iterrows():
-            idx, player, move, winner = i['idx'], i['player'], i['move'], i['winner']
+        prev_idx = 0
+        prev_move = 3
+
+        for i, row in moves.iterrows():
+            idx, player, move, winner = row['idx'], row['player'], row['move'], row['winner']
 
             if starter is None:
                 starter = player
@@ -73,5 +86,12 @@ class Converter:
             labels[idx, 1] = winner
             labels[idx, 2] = move
             labels[idx, 3] = starter
+            labels[idx, 4] = -1
 
-        return (states, labels)
+            if prev_idx != idx - 1:
+                labels[idx, 4] = prev_move
+
+            prev_idx = idx
+            prev_move = move
+
+        return states, labels
