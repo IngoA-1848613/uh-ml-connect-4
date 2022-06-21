@@ -1,6 +1,7 @@
 import tensorflow as tf
 
 from models.model2 import Model2
+from models.model3 import Model3
 from preprocessing.converter import Converter
 from utils.validator import Validator
 
@@ -13,7 +14,7 @@ class Main:
     dataset = []
     dataset_name = "data/dat/c4-50k.npy"
     model_name = "model3"
-    model = Model2()
+    model = Model3()
 
     # Init
     def __init__(self) -> None:
@@ -66,7 +67,7 @@ if __name__ == "__main__":
     # Actions
     # Main.convert()
     main.preprocess()
-    # main.train()
+    main.train()
     #
-    main.test()
-    # main.test_against_game()
+    # main.test()
+    main.test_against_game()
