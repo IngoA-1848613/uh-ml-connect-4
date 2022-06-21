@@ -7,33 +7,44 @@ from lib.connectfour import Game
 class Converter:
 
     # General methods
-    def read_games(self, input, callback):
+    @staticmethod
+    def read_games(input_file: str):
         columns = ["game", "idx", "player", "move", "winner"]
 
-        X = pd.read_csv(input, names=columns)
-        for _, game in X.groupby('game'):
-            yield callback(game)
+        data = pd.read_csv(input_file, names=columns)
+        for _, game in data.groupby('game'):
+            yield Converter.board(game)
 
-    def create(self, input: str, output: str, callback):
-        X = np.vstack([np.hstack(game) for game in self.read_games(input, callback)])
-        np.save(output, X)
-        print("converted: {0} to {1}".format(input, output))
+    @staticmethod
+    def create(input_file: str, output_file: str):
+        data = np.vstack([np.hstack(game) for game in Converter.read_games(input_file)])
+        np.save(output_file, data)
+
+        print("converted: {0} to {1}".format(input_file, output_file))
 
     @classmethod
     def get(cls, item):
         board_size = 6 * 7
-        return item[0:board_size], item[board_size:]
+        board_size2 = board_size * 2
+
+        return item[0:board_size], item[board_size:board_size2], item[board_size2], item[board_size2 + 1], \
+               item[board_size2 + 2], item[board_size2 + 3], item[board_size2 + 4]
 
     # Board parsers
     # Default
     @classmethod
     def board(cls, moves):
-        states = np.empty((len(moves), 7 * 6))
-        labels = np.empty((len(moves), 5))
+        board_before = np.empty((len(moves), 7 * 6))
+        board_after = np.empty((len(moves), 7 * 6))
+        label_starter = np.empty((len(moves), 1))
+        label_player = np.empty((len(moves), 1))
+        label_winner = np.empty((len(moves), 1))
+        label_curr_move = np.empty((len(moves), 1))
+        label_prev_move = np.empty((len(moves), 1))
 
         game = Game()
-        starter = None
 
+        starter = None
         prev_idx = 0
         prev_move = 3
 
@@ -43,55 +54,20 @@ class Converter:
             if starter is None:
                 starter = player
 
+            board_before[idx, :] = game.board.flatten()
             game.play_move(player, move)
-            states[idx, :] = game.board.reshape((-1))
+            board_after[idx, :] = game.board.flatten()
 
-            labels[idx, 0] = player
-            labels[idx, 1] = winner
-            labels[idx, 2] = move
-            labels[idx, 3] = starter
-            labels[idx, 4] = -1
+            label_starter[idx, 0] = starter
+            label_player[idx, 0] = player
+            label_winner[idx, 0] = winner
+            label_curr_move[idx, 0] = move
+            label_prev_move[idx, 0] = -1
 
             if prev_idx != idx - 1:
-                labels[idx, 4] = prev_move
+                label_prev_move[idx, 0] = prev_move
 
             prev_idx = idx
             prev_move = move
 
-        return states, labels
-
-    # Capture board before move
-    @classmethod
-    def board_bbm(cls, moves):
-        states = np.empty((len(moves), 7 * 6))
-        labels = np.empty((len(moves), 5))
-
-        game = Game()
-        starter = None
-
-        # moves.iter-rows() -> a list of moves between 2 players
-        prev_idx = 0
-        prev_move = 3
-
-        for i, row in moves.iterrows():
-            idx, player, move, winner = row['idx'], row['player'], row['move'], row['winner']
-
-            if starter is None:
-                starter = player
-
-            states[idx, :] = game.board.reshape((-1))
-            game.play_move(player, move)
-
-            labels[idx, 0] = player
-            labels[idx, 1] = winner
-            labels[idx, 2] = move
-            labels[idx, 3] = starter
-            labels[idx, 4] = -1
-
-            if prev_idx != idx - 1:
-                labels[idx, 4] = prev_move
-
-            prev_idx = idx
-            prev_move = move
-
-        return states, labels
+        return board_before, board_after, label_starter, label_player, label_winner, label_curr_move, label_prev_move
