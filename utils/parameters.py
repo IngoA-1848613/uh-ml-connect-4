@@ -1,3 +1,4 @@
+from typing import List
 from keras.optimizers import Adam
 
 
@@ -7,7 +8,7 @@ class Parameters:
     batch_size: int = 32
     epochs: int = 5
 
-    hidden_layers: [int] = [300, 225, 225, 225]
+    hidden_layers: List[int] = [300, 225, 225, 225]
 
     activation_output: str = "softmax"
     activation_hidden: str = "relu"

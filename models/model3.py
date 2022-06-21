@@ -90,15 +90,17 @@ class Model3:
         return self._model
 
     # Training
-    def train_model(self, name="model3", parameters=None):
+    def train_model(self, name="model3", epoch=25, batch_size=32):
         x_train, x_test, y_train, y_test = self.get_split_input_output()
+
+        print(f"{epoch = } and {batch_size = }")
 
         history = self._model.fit(
             x_train,
             y_train,
             validation_data=(x_test, y_test),
-            epochs=EPOCHS,
-            batch_size=BATCH_SIZE,
+            epochs=epoch,
+            batch_size=batch_size,
         )
 
         self.save_model(name)
