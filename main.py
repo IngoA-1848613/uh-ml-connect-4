@@ -33,16 +33,18 @@ class Main:
         # preprocessor = Preprocessor("data/dat/c4-10k.npy")
         # self.dataset = preprocessor.process_bw()
 
-        preprocessor = Preprocessor("data/dat/c4bbm-50k.npy")
-        self.dataset = preprocessor.process_bm()
+        preprocessor = Preprocessor("./data/c5.npy")
+        self.dataset = preprocessor.process_history()
 
     # Training/evaluation
     def train(self):
         print("training ...")
 
-        model = Model2(self.dataset)
+        model = Model3(self.dataset)
         model.create_model()
-        model.train_model()
+
+        for batch_size in [16, 32, 64, 128, 256]:
+            model.train_model(batch_size, "model_b_" + str(batch_size))
 
     def test(self):
         print("running cross_validation ...")
@@ -53,10 +55,14 @@ class Main:
     def test_against_x(self):
         print("testing against player ...")
 
-        model = Model2()
-        model.load_model()
+        model = Model3()
 
-        model.validate_against_monte_carlo(5)
+        model.load_model("model_b_16")
+
+        winrate_a = model.validate_against_monte_carlo(10)
+        winrate_b = model.validate_against_monte_carlo(40)
+
+        print(f"winrate n = 10 {winrate_a} and winrate n = 40 {winrate_b}")
 
     def test_against_random(self):
         print("testing against player ...")
@@ -78,4 +84,4 @@ if __name__ == "__main__":
     # main.preprocess()
     # main.train()
 
-    main.test_against_random()
+    main.test_against_x()

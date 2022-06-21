@@ -1,3 +1,4 @@
+from fileinput import filename
 import numpy as np
 
 from preprocessing.converter import Converter
@@ -61,5 +62,17 @@ class Preprocessor:
                 # print(np.array(board).reshape((6, 7)))
         print("1w: ", starter_winner)
         print("2w: ", second_winner)
+
+        return history
+
+    def process_history(self):
+        data, history = np.load(self._filename), []
+
+        for item in data:
+            winner, starter = item[42], item[43]
+
+            board = np.array(item[:42])
+
+            history.append((board, winner, starter))
 
         return history
