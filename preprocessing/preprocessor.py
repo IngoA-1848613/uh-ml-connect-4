@@ -17,10 +17,6 @@ class Preprocessor:
     def process_bw(self):
         data, history = np.load(self._filename), []
 
-        # shuffle data
-        np.random.seed(SEED)
-        np.random.shuffle(data)
-
         # add to history
         for item in data:
             board_before, board_after, starter, player, winner, curr_move, prev_move = Converter.get(item)
@@ -55,8 +51,8 @@ class Preprocessor:
         data, history = np.load(self._filename), []
 
         # shuffle data
-        # np.random.seed(SEED)
-        # np.random.shuffle(data)
+        np.random.seed(SEED)
+        np.random.shuffle(data)
 
         # add to history
         for item in data:

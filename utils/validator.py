@@ -47,7 +47,7 @@ class Validator:
             wr = results_ai / (results_ai + results_random)
             sn = "first" if start_player == PLAYER_AI else "second"
             wn = "wins" if game.status == PLAYER_AI else "loses"
-            print(f"iteration ({i}): ai goes {sn} and {wn} - win-rate ({wr:.2f})")
+            # print(f"iteration ({i}): ai goes {sn} and {wn} - win-rate ({wr:.2f})")
 
         results_ai = results[PLAYER_AI]
         results_random = results[PLAYER_RANDOM]

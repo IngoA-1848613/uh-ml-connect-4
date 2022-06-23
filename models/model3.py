@@ -1,3 +1,4 @@
+from calendar import EPOCH
 from copy import deepcopy
 
 import numpy as np
@@ -90,10 +91,8 @@ class Model3:
         return self._model
 
     # Training
-    def train_model(self, name="model3", epoch=25, batch_size=32):
+    def train_model(self, name="model3", epoch=5, batch_size=32):
         x_train, x_test, y_train, y_test = self.get_split_input_output()
-
-        print(f"{epoch = } and {batch_size = }")
 
         history = self._model.fit(
             x_train,
