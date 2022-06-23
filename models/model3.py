@@ -16,8 +16,6 @@ from preprocessing.preprocessor import Preprocessor
 LOSS = "categorical_crossentropy"
 
 TRAIN_SIZE = 0.7
-ITERATIONS = 100
-MC_DEPTH = 10
 
 EXTRA_FEATURES = 1
 NUM_ROWS = 6

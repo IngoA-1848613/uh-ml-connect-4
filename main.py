@@ -1,6 +1,7 @@
 import tensorflow as tf
 import os
 
+from models.model2 import Model2
 from models.model3 import Model3
 from preprocessing.converter import Converter
 from utils.validator import Validator
@@ -50,10 +51,10 @@ class Main:
         self.model.train_model(name="model3")
 
 
-    @staticmethod
-    def test():
+    def test(self):
         print("running cross_validation ...")
-        # self.model.cross_validation()
+
+        Validator.cross_validation_against_game(self.model)
 
     def test_against_game(self):
         print("testing against game ...")
